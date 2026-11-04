@@ -1,0 +1,45 @@
+{
+  "tested_utc": "2026-11-04T12:59:46.927322+00:00",
+  "image": "mariadb:11.4",
+  "image_digests": [
+    "mariadb@sha256:d1891ede5a559f1086f55053bb8cc1569b0298338c4d72d71725a7f74f6ba620"
+  ],
+  "network": "none",
+  "published_ports": [],
+  "cases": [
+    {
+      "case": "tcp_refused",
+      "exit_code": 1,
+      "error_code": "2002",
+      "sqlstate": "HY000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "authentication_denied",
+      "exit_code": 1,
+      "error_code": "1045",
+      "sqlstate": "28000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "missing_socket",
+      "exit_code": 1,
+      "error_code": "2002",
+      "sqlstate": "HY000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "authenticated_control",
+      "exit_code": 0,
+      "error_code": null,
+      "sqlstate": null,
+      "query_result": "1",
+      "passed": true
+    }
+  ],
+  "client_version": "mariadb from 11.4.13-MariaDB, client 15.2 for debian-linux-gnu (x86_64) using  EditLine wrapper",
+  "cleanup": "completed"
+}

@@ -1,0 +1,46 @@
+Build your MySQL / MariaDB connection checklist
+This is a diagnostic checklist, not confirmation of a root cause or a successful fix.
+https://cyber-tool.org/en/port/3306#connection-guide
+
+Connection refused
+Use this branch when the full message indicates connection refused. MySQL may report 2003/10061 and the MariaDB client may report 2002; if a socket path is named, select the local socket branch.
+1. Run the check from the machine or container network where the failing application runs.
+2. Compare the listening service with the application hostname and configured port.
+3. A missing listener or an explicit network rejection may be responsible; the error number alone is insufficient.
+Next step: If TCP connects, return to the full application error. Otherwise, check the listener and permitted source network with the server administrator.
+
+Connection timed out
+Use this branch when the client waits for a connection and then times out.
+1. Check whether the application hostname resolves to the expected address.
+2. Compare VPN, private-network and cloud access rules with the application source network.
+3. Inspect the path before increasing a timeout; a timeout alone does not prove firewall blocking.
+Next step: Keep your network result separate from an external port check. A private database may correctly be unreachable from the internet.
+
+1045 — Access denied
+Use this branch when the database rejects authentication.
+1. Verify that the client reaches the intended environment and server.
+2. Have an authorized administrator check the user/host account match, privileges and authentication method.
+3. Keep passwords out of support tickets; do not automatically retry failed logins.
+Next step: Opening more ports does not diagnose an authentication failure after connecting. Recheck the original application request after correcting the account configuration.
+
+2002 — Local socket connection
+If the message names a socket path, a TCP test exercises a different transport.
+1. Establish whether the client and database run on the same machine.
+2. Compare the socket path expected by the client with the one used by the server.
+3. Compare with TCP only if your local server listens on TCP and the account is authorized for it.
+Next step: Do not delete the socket file arbitrarily. Successful TCP access does not validate the socket path or permissions.
+
+2005 — Unknown server host
+If the hostname cannot be resolved, investigate name resolution first.
+1. Check the spelling and intended environment of the hostname.
+2. Resolve it inside the application network; a private DNS or container service name may not work externally.
+3. Compare the answer with the expected address; DNS success does not establish TCP or login success.
+Next step: After resolution works in the correct network, continue with the same hostname and configured port.
+
+Sources and command documentation
+MySQL connection troubleshooting: https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html
+MySQL client error reference: https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html
+MySQL Access denied: https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html
+MariaDB connection parameters: https://mariadb.com/docs/server/mariadb-quickstart-guides/mariadb-connecting-guide
+Windows Test-NetConnection: https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection
+OpenBSD nc: https://man.openbsd.org/nc

@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Build your MySQL / MariaDB connection checklist</title><style>body{--brand-primary:#1748a0;--text-secondary:#49576d;--bg-surface-alt:#f1f4f9;--border-default:#ccd5e3;--radius-md:8px;--font-mono:monospace;font:17px/1.6 system-ui,sans-serif;background:#f5f7fb;color:#182238;margin:0}main{max-width:1000px;margin:auto;padding:24px}h1{line-height:1.15}a{color:#1748a0}button,select{font:inherit;max-width:100%;padding:10px;border:1px solid #7c8da6;border-radius:6px;background:white;color:#182238}button{cursor:pointer}.workspace-card{background:white;padding:24px;border-radius:12px;border:1px solid #ccd5e3}.btn-primary{background:#204e9b;color:white}pre{white-space:pre-wrap;overflow-wrap:anywhere}label{display:block}summary{cursor:pointer}:focus-visible{outline:3px solid #ad6400;outline-offset:3px}nav{display:flex;gap:1rem;flex-wrap:wrap}
+.connection-journey { margin-bottom: 2rem; border-top: 4px solid var(--brand-primary); }
+.connection-journey h2 { font-size: 1.55rem; margin: .25rem 0 .6rem; }
+.connection-journey h3 { margin: 1.35rem 0 .6rem; }
+.connection-journey p, .connection-journey li { line-height: 1.7; }
+.journey-kicker { color: var(--brand-primary); font-size: .75rem; font-weight: 800; letter-spacing: .08em; }
+.journey-form { display: grid; grid-template-columns: 1.5fr 1.2fr .8fr; gap: 1rem; margin: 1.25rem 0; }
+.journey-form label { display: block; font-size: .9rem; font-weight: 600; min-width: 0; }
+.journey-form select { display: block; width: 100%; margin-top: .4rem; min-height: 48px; }
+.journey-form button { grid-column: 1 / -1; justify-self: start; }
+.journey-note { font-size: .88rem; color: var(--text-secondary); margin: .8rem 0; }
+.connection-journey pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1.25rem; background: var(--bg-surface-alt); border: 1px solid var(--border-default); border-radius: var(--radius-md); font: .88rem/1.7 var(--font-mono); }
+.journey-actions { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: 1rem; }
+.connection-journey details { border-bottom: 1px solid var(--border-default); padding: .8rem 0; }
+.connection-journey summary { cursor: pointer; font-weight: 650; min-height: 30px; }
+.connection-journey details p { margin: .5rem 0; }
+.connection-journey ol, .connection-journey ul { padding-left: 1.4rem; }
+.connection-journey a { color: var(--brand-primary); text-decoration: underline; }
+.connection-journey [hidden] { display: none !important; }
+@media(max-width: 760px) { .journey-form { grid-template-columns: 1fr; } .journey-actions button { width: 100%; } }
+</style></head><body><main><nav><a href="demo-tr.html">Türkçe</a><a href="#mysql-worked-example">Read the worked examples</a></nav><h1>Build your MySQL / MariaDB connection checklist</h1><!-- connection-journey:start -->
+
+<section class="workspace-card connection-journey" id="connection-guide" aria-labelledby="connection-guide-title">
+<p class="journey-kicker">MYSQL / MARIADB · 3306</p>
+<h2 id="connection-guide-title">Build your MySQL / MariaDB connection checklist</h2><p>Choose the error and client environment to get relevant checks and command examples. No hostname, username or password is needed.</p>
+
+<form id="mysql-journey-form" class="journey-form">
+<label for="mysql-error">Error you see<select class="input-field" id="mysql-error"><option value="refused">Connection refused</option><option value="timeout">Connection timed out</option><option value="auth">1045 — Access denied</option><option value="socket">2002 — Local socket connection</option><option value="dns">2005 — Unknown server host</option></select></label>
+<label for="mysql-os">Environment for the check<select class="input-field" id="mysql-os"><option value="unix">Linux / macOS (OpenBSD nc)</option><option value="windows">Windows PowerShell</option></select></label>
+<label for="mysql-client">Database client<select class="input-field" id="mysql-client"><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option></select></label>
+<button class="btn btn-primary" type="submit">Build my checklist</button>
+</form><p class="journey-note">This section does not execute commands or connect to a server. Replace the example hostname and port for your authorized environment. A shared link contains only the selected error, environment and client.</p>
+<div id="mysql-plan" hidden><h3 tabindex="-1" id="mysql-plan-title">Your selected checklist</h3><pre id="mysql-plan-text"></pre>
+<div class="journey-actions"><button class="btn btn-secondary" id="mysql-copy" type="button">Copy checklist</button><button class="btn btn-secondary" id="mysql-download" type="button">Download text</button><button class="btn btn-secondary" id="mysql-share" type="button">Copy case link</button></div>
+<p id="mysql-plan-status" role="status"></p></div>
+<h3>First checks by error type</h3><details id="mysql-case-refused"><summary>Connection refused</summary><p>Use this branch when the full message indicates connection refused. MySQL may report 2003/10061 and the MariaDB client may report 2002; if a socket path is named, select the local socket branch.</p><ol><li>Run the check from the machine or container network where the failing application runs.</li><li>Compare the listening service with the application hostname and configured port.</li><li>A missing listener or an explicit network rejection may be responsible; the error number alone is insufficient.</li></ol><p><strong>Next step:</strong> If TCP connects, return to the full application error. Otherwise, check the listener and permitted source network with the server administrator.</p></details><details id="mysql-case-timeout"><summary>Connection timed out</summary><p>Use this branch when the client waits for a connection and then times out.</p><ol><li>Check whether the application hostname resolves to the expected address.</li><li>Compare VPN, private-network and cloud access rules with the application source network.</li><li>Inspect the path before increasing a timeout; a timeout alone does not prove firewall blocking.</li></ol><p><strong>Next step:</strong> Keep your network result separate from an external port check. A private database may correctly be unreachable from the internet.</p></details><details id="mysql-case-auth"><summary>1045 — Access denied</summary><p>Use this branch when the database rejects authentication.</p><ol><li>Verify that the client reaches the intended environment and server.</li><li>Have an authorized administrator check the user/host account match, privileges and authentication method.</li><li>Keep passwords out of support tickets; do not automatically retry failed logins.</li></ol><p><strong>Next step:</strong> Opening more ports does not diagnose an authentication failure after connecting. Recheck the original application request after correcting the account configuration.</p></details><details id="mysql-case-socket"><summary>2002 — Local socket connection</summary><p>If the message names a socket path, a TCP test exercises a different transport.</p><ol><li>Establish whether the client and database run on the same machine.</li><li>Compare the socket path expected by the client with the one used by the server.</li><li>Compare with TCP only if your local server listens on TCP and the account is authorized for it.</li></ol><p><strong>Next step:</strong> Do not delete the socket file arbitrarily. Successful TCP access does not validate the socket path or permissions.</p></details><details id="mysql-case-dns"><summary>2005 — Unknown server host</summary><p>If the hostname cannot be resolved, investigate name resolution first.</p><ol><li>Check the spelling and intended environment of the hostname.</li><li>Resolve it inside the application network; a private DNS or container service name may not work externally.</li><li>Compare the answer with the expected address; DNS success does not establish TCP or login success.</li></ol><p><strong>Next step:</strong> After resolution works in the correct network, continue with the same hostname and configured port.</p></details>
+<p><a href="mysql-connection-checklist-en.txt" download>Download the checklist for all cases</a></p>
+<p class="journey-note">This is a diagnostic checklist, not confirmation of a root cause or a successful fix.</p>
+
+<details><summary>Sources and command documentation</summary><ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html">MySQL connection troubleshooting</a></li><li><a href="https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html">MySQL client error reference</a></li><li><a href="https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html">MySQL Access denied</a></li><li><a href="https://mariadb.com/docs/server/mariadb-quickstart-guides/mariadb-connecting-guide">MariaDB connection parameters</a></li><li><a href="https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection">Windows Test-NetConnection</a></li><li><a href="https://man.openbsd.org/nc">OpenBSD nc</a></li></ul></details>
+<script type="application/json" id="mysql-journey-data">{"language": "en", "copy": {"title": "Build your MySQL / MariaDB connection checklist", "intro": "Choose the error and client environment to get relevant checks and command examples. No hostname, username or password is needed.", "error": "Error you see", "os": "Environment for the check", "client": "Database client", "unix": "Linux / macOS (OpenBSD nc)", "windows": "Windows PowerShell", "action": "Build my checklist", "result": "Your selected checklist", "copy": "Copy checklist", "download": "Download text", "share": "Copy case link", "note": "This section does not execute commands or connect to a server. Replace the example hostname and port for your authorized environment. A shared link contains only the selected error, environment and client.", "all": "First checks by error type", "next": "Next step", "copied": "Copied.", "fallback": "Clipboard access was blocked. Select the text below to copy it or download it.", "refs": "Sources and command documentation", "full": "Download the checklist for all cases", "disclaimer": "This is a diagnostic checklist, not confirmation of a root cause or a successful fix.", "command": "Command example — run in the application environment against your authorized target", "socketWindows": "This branch is for Unix socket messages. For WSL or containers, evaluate the command inside that environment; do not equate it with a native Windows named-pipe error.", "socketCommand": "Compare only with a TCP listener on the same machine. Replace YOUR_USER with your authorized account; the client prompts for the password instead of including it in the command.", "authCommand": "No automatic login attempt or password command is generated for this branch.", "reference": "Source page", "oslabel": "Environment", "clientlabel": "Client"}, "cases": {"refused": ["Connection refused", "Use this branch when the full message indicates connection refused. MySQL may report 2003/10061 and the MariaDB client may report 2002; if a socket path is named, select the local socket branch.", ["Run the check from the machine or container network where the failing application runs.", "Compare the listening service with the application hostname and configured port.", "A missing listener or an explicit network rejection may be responsible; the error number alone is insufficient."], "If TCP connects, return to the full application error. Otherwise, check the listener and permitted source network with the server administrator."], "timeout": ["Connection timed out", "Use this branch when the client waits for a connection and then times out.", ["Check whether the application hostname resolves to the expected address.", "Compare VPN, private-network and cloud access rules with the application source network.", "Inspect the path before increasing a timeout; a timeout alone does not prove firewall blocking."], "Keep your network result separate from an external port check. A private database may correctly be unreachable from the internet."], "auth": ["1045 — Access denied", "Use this branch when the database rejects authentication.", ["Verify that the client reaches the intended environment and server.", "Have an authorized administrator check the user/host account match, privileges and authentication method.", "Keep passwords out of support tickets; do not automatically retry failed logins."], "Opening more ports does not diagnose an authentication failure after connecting. Recheck the original application request after correcting the account configuration."], "socket": ["2002 — Local socket connection", "If the message names a socket path, a TCP test exercises a different transport.", ["Establish whether the client and database run on the same machine.", "Compare the socket path expected by the client with the one used by the server.", "Compare with TCP only if your local server listens on TCP and the account is authorized for it."], "Do not delete the socket file arbitrarily. Successful TCP access does not validate the socket path or permissions."], "dns": ["2005 — Unknown server host", "If the hostname cannot be resolved, investigate name resolution first.", ["Check the spelling and intended environment of the hostname.", "Resolve it inside the application network; a private DNS or container service name may not work externally.", "Compare the answer with the expected address; DNS success does not establish TCP or login success."], "After resolution works in the correct network, continue with the same hostname and configured port."]}}</script>
+
+</section><!-- connection-journey:end --><section id="mysql-connection-lab" aria-labelledby="mysql-lab-title">
+<h3 id="mysql-lab-title">2002, 2003 and 1045: what changes in a real experiment?</h3><p>On 4 November 2026 we tested four cases with the MariaDB 11.4.13 client in an isolated Docker container. It had no external network or published host ports; checks used its own loopback interface. The container and temporary data were removed afterwards. These are controlled experiments reproducible with the script below, not customer incidents.</p>
+<div style="overflow-x:auto"><table><caption>Results of four controlled checks</caption><thead><tr><th scope="col">Transport</th><th scope="col">Result</th><th scope="col">Interpretation</th></tr></thead><tbody><tr><td><code>TCP 127.0.0.1:3307</code></td><td><code>2002 / HY000</code></td><td>No listener: connection refused. Changing the password does not create a listener.</td></tr><tr><td><code>TCP 127.0.0.1:3306</code></td><td><code>1045 / 28000</code></td><td>This experiment deliberately supplied a wrong password; authentication was rejected.</td></tr><tr><td><code>SOCKET /tmp/cybertool-absent.sock</code></td><td><code>2002 / HY000</code></td><td>A nonexistent Unix socket path. Changing a TCP port does not fix this path.</td></tr><tr><td><code>TCP 127.0.0.1:3306</code></td><td><code>SELECT 1 → 1; exit 0</code></td><td>Same server and port, correct temporary password: successful control.</td></tr></tbody></table></div>
+<p><strong>Key distinction: this MariaDB client returned 2002 for two different transports. The MySQL documentation uses 2003 / 10061 for a refused connection; clients need not use the same number. Read the host/port or socket path in the full message first. On a real system, 1045 alone does not prove a wrong password: also inspect the user/host account match and authentication method.</strong></p><h4>Why localhost can mislead you inside Docker</h4><p>If the application and database use separate containers, 127.0.0.1 in the application points to the application container itself. Use the Compose service name and container port on their shared Docker network, for example db:3306. A host mapping of 3307:3306 does not mean another container should use db:3307. Our experiment deliberately runs the client inside the database container, where 127.0.0.1 is appropriate. Repeat checks from the actual application network for a real incident.</p>
+<h4>Reproduce the experiment</h4><p>Requires Python 3 and a running Docker daemon. Extract the kit and run these two commands from its directory. The first downloads the official MariaDB image. The script starts one disposable container limited to 512 MB and 1 CPU, checks four outcomes, then cleans up. Random credentials exist only in the temporary process/container environment and are never printed. The image tag may change; the JSON output records the actual digest. This experiment has not been verified against a MySQL server or native Windows client.</p>
+<pre><code>docker pull mariadb:11.4
+python3 mysql_connection_lab.py</code></pre>
+<p><a href="READ-ME.txt">Kit with the lab script and recorded results</a> · <a href="https://github.com/codeonthetable/cybertool-connection-checklists">GitHub</a></p>
+<p>References: <a href="https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html">MySQL connection troubleshooting</a> · <a href="https://docs.docker.com/compose/how-tos/networking/">Docker Compose networking</a></p></section><section id="mysql-worked-example" aria-labelledby="mysql-example-title"><h3 id="mysql-example-title">One application, two errors: which check comes next?</h3><p>Hypothetical example: a Windows application cannot connect to a database on an authorized private network. These are not captured server results or resolved customer incidents.</p><h4>A — 2003 / Connection refused / 10061</h4><p>The TCP connection was refused. From the application network, check the destination and configured port; compare the listener with the administrator. A successful check from another machine does not establish application connectivity.</p><p><a data-mysql-example="refused" href="demo-en.html#mysql-case=refused&amp;os=windows&amp;client=mysql">Open this example’s checklist</a></p><h4>B — 1045 / Access denied</h4><p>The server rejected authentication. Verify the intended environment, then review the user/host account match and authentication method with the administrator. This message alone does not prove a wrong password.</p><p><a data-mysql-example="auth" href="demo-en.html#mysql-case=auth&amp;os=windows&amp;client=mysql">Open this example’s checklist</a></p><p>Open the matching checklist to continue. Exposing a private database to the internet or disabling a firewall is not the fix proposed in either example.</p></section><p><a href="https://cyber-tool.org/en/port/3306#connection-guide">Current web guide</a> · cyber-tool.org</p></main><script>/* Local-only checklist. Never fetch targets or collect credentials. */
+(function (root) {
+    'use strict';
+    const CASES = ['refused', 'timeout', 'auth', 'socket', 'dns'];
+    function normalize(selection = {}) {
+        return {error: CASES.includes(selection.error) ? selection.error : 'refused',
+            os: selection.os === 'windows' ? 'windows' : 'unix',
+            client: selection.client === 'mariadb' ? 'mariadb' : 'mysql'};
+    }
+    function command(selection) {
+        const s = normalize(selection);
+        if (s.error === 'auth') return '';
+        if (s.error === 'dns') return 'nslookup db.example.com';
+        if (s.error === 'socket') return s.os === 'windows' ? '' : s.client + ' --protocol=TCP --host=127.0.0.1 --port=3306 --user=YOUR_USER --password';
+        return s.os === 'windows' ? 'Test-NetConnection -ComputerName db.example.com -Port 3306 -InformationLevel Detailed' : 'nc -vz -w 5 db.example.com 3306';
+    }
+    function fragment(selection) {
+        const s = normalize(selection);
+        return '#mysql-case=' + s.error + '&os=' + s.os + '&client=' + s.client;
+    }
+    const api = {normalize, command, fragment};
+    if (typeof module !== 'undefined' && module.exports) module.exports = api;
+    if (typeof document === 'undefined') return;
+    const dataNode = document.getElementById('mysql-journey-data');
+    if (!dataNode) return;
+    const data = JSON.parse(dataNode.textContent), copy = data.copy;
+    const form = document.getElementById('mysql-journey-form');
+    const error = document.getElementById('mysql-error'), os = document.getElementById('mysql-os'), client = document.getElementById('mysql-client');
+    const plan = document.getElementById('mysql-plan'), output = document.getElementById('mysql-plan-text'), status = document.getElementById('mysql-plan-status');
+    const canonical = 'https://cyber-tool.org/' + data.language + '/port/3306';
+    let active = normalize();
+    let emitted = new Set();
+    function metric(name, outcome) {
+        if (new URLSearchParams(location.search).get('measurement') === 'off' || !/^(www\.)?cyber-tool\.org$/.test(location.hostname)) return;
+        try { if (localStorage.getItem('cybertool_measurement') === 'off') return; } catch (_) {}
+        if (typeof root.gtag !== 'function' || emitted.has(name + outcome)) return;
+        emitted.add(name + outcome);
+        root.gtag('event', name, {tool_id: 'mysql_connection', outcome, ui_language: data.language, page_location: location.origin + location.pathname});
+    }
+    function build(selection, fromUser) {
+        active = normalize(selection);
+        error.value = active.error; os.value = active.os; client.value = active.client;
+        const [title, meaning, steps, next] = data.cases[active.error];
+        const lines = [title, copy.oslabel + ': ' + copy[active.os], copy.clientlabel + ': ' + active.client, '', meaning, '', ...steps.map((s, i) => (i + 1) + '. ' + s), '', copy.next + ': ' + next, ''];
+        const cmd = command(active);
+        if (active.error === 'socket') lines.push(active.os === 'windows' ? copy.socketWindows : copy.socketCommand, '');
+        if (active.error === 'auth') lines.push(copy.authCommand, '');
+        if (cmd) lines.push(copy.command, cmd, '');
+        lines.push(copy.disclaimer, copy.reference + ': ' + canonical + fragment(active));
+        output.textContent = lines.join('\n');
+        plan.hidden = false; status.textContent = '';
+        if (fromUser) { document.getElementById('mysql-plan-title').focus(); metric('diagnostic_plan_generated', active.error); }
+    }
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        build({error: error.value, os: os.value, client: client.value}, event.isTrusted);
+    });
+    async function clipboard(text, outcome, trusted) {
+        try { await navigator.clipboard.writeText(text); status.textContent = copy.copied; if (trusted) metric('diagnostic_plan_exported', outcome); }
+        catch (_) { status.textContent = copy.fallback; }
+    }
+    document.getElementById('mysql-copy').addEventListener('click', event => clipboard(output.textContent, 'copy', event.isTrusted));
+    document.getElementById('mysql-share').addEventListener('click', event => clipboard(canonical + fragment(active), 'case_link', event.isTrusted));
+    document.getElementById('mysql-download').addEventListener('click', event => {
+        const url = URL.createObjectURL(new Blob([output.textContent + '\n'], {type: 'text/plain;charset=utf-8'}));
+        const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'mysql-checklist-' + active.error + '-' + data.language + '.txt';
+        anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        if (event.isTrusted) metric('diagnostic_plan_exported', 'download_requested');
+    });
+    const kitDownload = document.getElementById('mysql-kit-download');
+    if (kitDownload) kitDownload.addEventListener('click', event => {
+        if (event.isTrusted) metric('diagnostic_asset_requested', 'offline_zip');
+    });
+    document.querySelectorAll('[data-mysql-example]').forEach(link => link.addEventListener('click', event => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        build({error: link.dataset.mysqlExample, os: 'windows', client: 'mysql'}, event.isTrusted);
+        document.getElementById('mysql-plan-title').scrollIntoView({block: 'start'});
+    }));
+    const initial = new URLSearchParams(location.hash.slice(1));
+    if (CASES.includes(initial.get('mysql-case'))) build({error: initial.get('mysql-case'), os: initial.get('os'), client: initial.get('client')}, false);
+})(typeof window !== 'undefined' ? window : globalThis);
+</script></body></html>

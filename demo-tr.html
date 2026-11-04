@@ -1,0 +1,133 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MySQL / MariaDB bağlantı sorununuz için kontrol listesi</title><style>body{--brand-primary:#1748a0;--text-secondary:#49576d;--bg-surface-alt:#f1f4f9;--border-default:#ccd5e3;--radius-md:8px;--font-mono:monospace;font:17px/1.6 system-ui,sans-serif;background:#f5f7fb;color:#182238;margin:0}main{max-width:1000px;margin:auto;padding:24px}h1{line-height:1.15}a{color:#1748a0}button,select{font:inherit;max-width:100%;padding:10px;border:1px solid #7c8da6;border-radius:6px;background:white;color:#182238}button{cursor:pointer}.workspace-card{background:white;padding:24px;border-radius:12px;border:1px solid #ccd5e3}.btn-primary{background:#204e9b;color:white}pre{white-space:pre-wrap;overflow-wrap:anywhere}label{display:block}summary{cursor:pointer}:focus-visible{outline:3px solid #ad6400;outline-offset:3px}nav{display:flex;gap:1rem;flex-wrap:wrap}
+.connection-journey { margin-bottom: 2rem; border-top: 4px solid var(--brand-primary); }
+.connection-journey h2 { font-size: 1.55rem; margin: .25rem 0 .6rem; }
+.connection-journey h3 { margin: 1.35rem 0 .6rem; }
+.connection-journey p, .connection-journey li { line-height: 1.7; }
+.journey-kicker { color: var(--brand-primary); font-size: .75rem; font-weight: 800; letter-spacing: .08em; }
+.journey-form { display: grid; grid-template-columns: 1.5fr 1.2fr .8fr; gap: 1rem; margin: 1.25rem 0; }
+.journey-form label { display: block; font-size: .9rem; font-weight: 600; min-width: 0; }
+.journey-form select { display: block; width: 100%; margin-top: .4rem; min-height: 48px; }
+.journey-form button { grid-column: 1 / -1; justify-self: start; }
+.journey-note { font-size: .88rem; color: var(--text-secondary); margin: .8rem 0; }
+.connection-journey pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1.25rem; background: var(--bg-surface-alt); border: 1px solid var(--border-default); border-radius: var(--radius-md); font: .88rem/1.7 var(--font-mono); }
+.journey-actions { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: 1rem; }
+.connection-journey details { border-bottom: 1px solid var(--border-default); padding: .8rem 0; }
+.connection-journey summary { cursor: pointer; font-weight: 650; min-height: 30px; }
+.connection-journey details p { margin: .5rem 0; }
+.connection-journey ol, .connection-journey ul { padding-left: 1.4rem; }
+.connection-journey a { color: var(--brand-primary); text-decoration: underline; }
+.connection-journey [hidden] { display: none !important; }
+@media(max-width: 760px) { .journey-form { grid-template-columns: 1fr; } .journey-actions button { width: 100%; } }
+</style></head><body><main><nav><a href="demo-en.html">English</a><a href="#mysql-worked-example">Örnek vakaları oku</a></nav><h1>MySQL / MariaDB bağlantı sorununuz için kontrol listesi</h1><!-- connection-journey:start -->
+
+<section class="workspace-card connection-journey" id="connection-guide" aria-labelledby="connection-guide-title">
+<p class="journey-kicker">MYSQL / MARIADB · 3306</p>
+<h2 id="connection-guide-title">MySQL / MariaDB bağlantı sorununuz için kontrol listesi</h2><p>Hata türünü ve istemci ortamını seçin. Size uygun adımları ve komut örneklerini alın; sunucu adı, kullanıcı veya parola girmeniz gerekmez.</p>
+
+<form id="mysql-journey-form" class="journey-form">
+<label for="mysql-error">Gördüğünüz hata<select class="input-field" id="mysql-error"><option value="refused">Bağlantı reddedildi / Connection refused</option><option value="timeout">Zaman aşımı / Connection timed out</option><option value="auth">1045 — Access denied</option><option value="socket">2002 — Yerel socket bağlantısı</option><option value="dns">2005 — Unknown server host</option></select></label>
+<label for="mysql-os">Kontrolü çalıştıracağınız ortam<select class="input-field" id="mysql-os"><option value="unix">Linux / macOS (OpenBSD nc)</option><option value="windows">Windows PowerShell</option></select></label>
+<label for="mysql-client">Veritabanı istemcisi<select class="input-field" id="mysql-client"><option value="mysql">MySQL</option><option value="mariadb">MariaDB</option></select></label>
+<button class="btn btn-primary" type="submit">Kontrol listemi oluştur</button>
+</form><p class="journey-note">Bu bölüm komut çalıştırmaz veya sunucuya bağlanmaz. Komutlardaki örnek adresi ve portu kendi yetkili ortamınıza göre değiştirin. Paylaşılan bağlantıda yalnız seçilen hata, ortam ve istemci bulunur.</p>
+<div id="mysql-plan" hidden><h3 tabindex="-1" id="mysql-plan-title">Seçiminize göre kontrol listesi</h3><pre id="mysql-plan-text"></pre>
+<div class="journey-actions"><button class="btn btn-secondary" id="mysql-copy" type="button">Listeyi kopyala</button><button class="btn btn-secondary" id="mysql-download" type="button">Metin olarak indir</button><button class="btn btn-secondary" id="mysql-share" type="button">Vaka bağlantısını kopyala</button></div>
+<p id="mysql-plan-status" role="status"></p></div>
+<h3>Hata türüne göre ilk kontroller</h3><details id="mysql-case-refused"><summary>Bağlantı reddedildi / Connection refused</summary><p>Tam mesaj bağlantı reddi gösteriyorsa bu dalı kullanın. MySQL 2003/10061, MariaDB istemcisi ise 2002 gösterebilir; socket yolu varsa yerel socket dalını seçin.</p><ol><li>Kontrolü hatalı uygulamanın çalıştığı makine veya konteyner ağından yapın.</li><li>Hedef portta dinleyen servis ile uygulamanın sunucu ve port ayarlarını karşılaştırın.</li><li>Açık ret, dinleyici eksikliği veya ağ erişim kuralından kaynaklanabilir; yalnız hata koduyla neden seçmeyin.</li></ol><p><strong>Sonraki adım:</strong> TCP testi başarılıysa uygulamadaki tam hataya dönün. Başarısızsa sunucu yöneticisiyle dinleyiciyi ve izinli kaynak ağını kontrol edin.</p></details><details id="mysql-case-timeout"><summary>Zaman aşımı / Connection timed out</summary><p>İstemci bağlantı için bekliyor ve zaman aşımına düşüyorsa bu dalı kullanın.</p><ol><li>Uygulamanın kullandığı sunucu adının beklenen IP adresine çözüldüğünü kontrol edin.</li><li>VPN, özel ağ ve bulut erişim kurallarını uygulamanın kaynak ağıyla karşılaştırın.</li><li>Süreyi artırmadan önce erişim yolunu inceleyin; zaman aşımı tek başına güvenlik duvarını kanıtlamaz.</li></ol><p><strong>Sonraki adım:</strong> Kendi ağınızdaki sonucu dışarıdan yapılan port testiyle ayrı değerlendirin. Özel veritabanının internete kapalı olması beklenen davranış olabilir.</p></details><details id="mysql-case-auth"><summary>1045 — Access denied</summary><p>Veritabanı kimlik doğrulama isteğini reddediyorsa bu dalı kullanın.</p><ol><li>İstemcinin doğru ortam ve sunucuya bağlandığını doğrulayın.</li><li>Yetkili yöneticiyle kullanıcı-hosta göre hesap eşleşmesini, yetkileri ve kimlik doğrulama yöntemini inceleyin.</li><li>Parolayı destek kaydına eklemeyin; başarısız girişleri otomatik olarak tekrarlamayın.</li></ol><p><strong>Sonraki adım:</strong> Ağ bağlantısı kurulduktan sonraki kimlik doğrulama hatası için rastgele port açmayın. Hesap ayarı düzeltildiğinde asıl uygulama isteğini yeniden kontrol edin.</p></details><details id="mysql-case-socket"><summary>2002 — Yerel socket bağlantısı</summary><p>Mesajda socket yolu geçiyorsa TCP testiyle farklı bir bağlantı türünü sınadığınızı unutmayın.</p><ol><li>İstemci ve sunucunun aynı makinede olup olmadığını belirleyin.</li><li>İstemcinin beklediği socket yolu ile sunucunun kullandığı yolu karşılaştırın.</li><li>TCP karşılaştırmasını yalnız yerel sunucunuz TCP dinliyorsa ve hesabınız bu bağlantıya yetkiliyse yapın.</li></ol><p><strong>Sonraki adım:</strong> Socket dosyasını gelişigüzel silmeyin. TCP ile başarı, socket yolunun veya izinlerinin doğru olduğunu göstermez.</p></details><details id="mysql-case-dns"><summary>2005 — Unknown server host</summary><p>Sunucu adı çözümlenemiyorsa önce adlandırma yolunu inceleyin.</p><ol><li>Sunucu adında yazım hatası veya yanlış ortam adı olup olmadığını kontrol edin.</li><li>Adı uygulamanın çalıştığı ağda çözümleyin; özel DNS veya konteyner servis adı dışarıdan çalışmayabilir.</li><li>DNS cevabını beklenen adresle karşılaştırın; DNS başarısı TCP veya oturum açma başarısı değildir.</li></ol><p><strong>Sonraki adım:</strong> Doğru ağda isim çözümleme çalıştıktan sonra aynı sunucu ve portla bağlantı adımına geçin.</p></details>
+<p><a href="mysql-connection-checklist-tr.txt" download>Tüm vakaların kontrol listesini indir</a></p>
+<p class="journey-note">Bu bir teşhis kontrol listesidir; nedenin bulunduğu veya sorunun çözüldüğü anlamına gelmez.</p>
+
+<details><summary>Kaynaklar ve komut belgeleri</summary><ul><li><a href="https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html">MySQL connection troubleshooting</a></li><li><a href="https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html">MySQL client error reference</a></li><li><a href="https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html">MySQL Access denied</a></li><li><a href="https://mariadb.com/docs/server/mariadb-quickstart-guides/mariadb-connecting-guide">MariaDB connection parameters</a></li><li><a href="https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection">Windows Test-NetConnection</a></li><li><a href="https://man.openbsd.org/nc">OpenBSD nc</a></li></ul></details>
+<script type="application/json" id="mysql-journey-data">{"language": "tr", "copy": {"title": "MySQL / MariaDB bağlantı sorununuz için kontrol listesi", "intro": "Hata türünü ve istemci ortamını seçin. Size uygun adımları ve komut örneklerini alın; sunucu adı, kullanıcı veya parola girmeniz gerekmez.", "error": "Gördüğünüz hata", "os": "Kontrolü çalıştıracağınız ortam", "client": "Veritabanı istemcisi", "unix": "Linux / macOS (OpenBSD nc)", "windows": "Windows PowerShell", "action": "Kontrol listemi oluştur", "result": "Seçiminize göre kontrol listesi", "copy": "Listeyi kopyala", "download": "Metin olarak indir", "share": "Vaka bağlantısını kopyala", "note": "Bu bölüm komut çalıştırmaz veya sunucuya bağlanmaz. Komutlardaki örnek adresi ve portu kendi yetkili ortamınıza göre değiştirin. Paylaşılan bağlantıda yalnız seçilen hata, ortam ve istemci bulunur.", "all": "Hata türüne göre ilk kontroller", "next": "Sonraki adım", "copied": "Kopyalandı.", "fallback": "Kopyalama engellendi; aşağıdaki metni seçerek kopyalayabilir veya indirebilirsiniz.", "refs": "Kaynaklar ve komut belgeleri", "full": "Tüm vakaların kontrol listesini indir", "disclaimer": "Bu bir teşhis kontrol listesidir; nedenin bulunduğu veya sorunun çözüldüğü anlamına gelmez.", "command": "Komut örneği — uygulamanın çalıştığı ortamda, yetkili hedef için", "socketWindows": "Bu dal Unix socket mesajı içindir. Windows üzerinde WSL/konteyner kullanıyorsanız komutu o ortamda değerlendirin; native Windows named-pipe hatasını aynı kabul etmeyin.", "socketCommand": "Yalnız aynı makinedeki TCP dinleyicisiyle karşılaştırma; YOUR_USER yerine yetkili hesabınızı yazın. Parola komut satırına eklenmez, istemci tarafından sorulur.", "authCommand": "Bu dal için otomatik giriş denemesi veya parola komutu üretilmez.", "reference": "Kaynak sayfa", "oslabel": "Ortam", "clientlabel": "İstemci"}, "cases": {"refused": ["Bağlantı reddedildi / Connection refused", "Tam mesaj bağlantı reddi gösteriyorsa bu dalı kullanın. MySQL 2003/10061, MariaDB istemcisi ise 2002 gösterebilir; socket yolu varsa yerel socket dalını seçin.", ["Kontrolü hatalı uygulamanın çalıştığı makine veya konteyner ağından yapın.", "Hedef portta dinleyen servis ile uygulamanın sunucu ve port ayarlarını karşılaştırın.", "Açık ret, dinleyici eksikliği veya ağ erişim kuralından kaynaklanabilir; yalnız hata koduyla neden seçmeyin."], "TCP testi başarılıysa uygulamadaki tam hataya dönün. Başarısızsa sunucu yöneticisiyle dinleyiciyi ve izinli kaynak ağını kontrol edin."], "timeout": ["Zaman aşımı / Connection timed out", "İstemci bağlantı için bekliyor ve zaman aşımına düşüyorsa bu dalı kullanın.", ["Uygulamanın kullandığı sunucu adının beklenen IP adresine çözüldüğünü kontrol edin.", "VPN, özel ağ ve bulut erişim kurallarını uygulamanın kaynak ağıyla karşılaştırın.", "Süreyi artırmadan önce erişim yolunu inceleyin; zaman aşımı tek başına güvenlik duvarını kanıtlamaz."], "Kendi ağınızdaki sonucu dışarıdan yapılan port testiyle ayrı değerlendirin. Özel veritabanının internete kapalı olması beklenen davranış olabilir."], "auth": ["1045 — Access denied", "Veritabanı kimlik doğrulama isteğini reddediyorsa bu dalı kullanın.", ["İstemcinin doğru ortam ve sunucuya bağlandığını doğrulayın.", "Yetkili yöneticiyle kullanıcı-hosta göre hesap eşleşmesini, yetkileri ve kimlik doğrulama yöntemini inceleyin.", "Parolayı destek kaydına eklemeyin; başarısız girişleri otomatik olarak tekrarlamayın."], "Ağ bağlantısı kurulduktan sonraki kimlik doğrulama hatası için rastgele port açmayın. Hesap ayarı düzeltildiğinde asıl uygulama isteğini yeniden kontrol edin."], "socket": ["2002 — Yerel socket bağlantısı", "Mesajda socket yolu geçiyorsa TCP testiyle farklı bir bağlantı türünü sınadığınızı unutmayın.", ["İstemci ve sunucunun aynı makinede olup olmadığını belirleyin.", "İstemcinin beklediği socket yolu ile sunucunun kullandığı yolu karşılaştırın.", "TCP karşılaştırmasını yalnız yerel sunucunuz TCP dinliyorsa ve hesabınız bu bağlantıya yetkiliyse yapın."], "Socket dosyasını gelişigüzel silmeyin. TCP ile başarı, socket yolunun veya izinlerinin doğru olduğunu göstermez."], "dns": ["2005 — Unknown server host", "Sunucu adı çözümlenemiyorsa önce adlandırma yolunu inceleyin.", ["Sunucu adında yazım hatası veya yanlış ortam adı olup olmadığını kontrol edin.", "Adı uygulamanın çalıştığı ağda çözümleyin; özel DNS veya konteyner servis adı dışarıdan çalışmayabilir.", "DNS cevabını beklenen adresle karşılaştırın; DNS başarısı TCP veya oturum açma başarısı değildir."], "Doğru ağda isim çözümleme çalıştıktan sonra aynı sunucu ve portla bağlantı adımına geçin."]}}</script>
+
+</section><!-- connection-journey:end --><section id="mysql-connection-lab" aria-labelledby="mysql-lab-title">
+<h3 id="mysql-lab-title">2002, 2003 ve 1045: gerçek deneyde ne değişiyor?</h3><p>4 Kasım 2026’da MariaDB 11.4.13 istemcisiyle dört durumu yalıtılmış bir Docker konteynerinde sınadık. Konteynerin dış ağı ve yayımlanan host portu yoktu; testler kendi loopback adresinde çalıştı. Sonrasında konteyner ve geçici veriler silindi. Bunlar müşteri vakası değil, aşağıdaki betikle tekrarlanabilen kontrollü deney sonuçlarıdır.</p>
+<div style="overflow-x:auto"><table><caption>Dört kontrollü testin sonucu</caption><thead><tr><th scope="col">Bağlantı</th><th scope="col">Sonuç</th><th scope="col">Yorum</th></tr></thead><tbody><tr><td><code>TCP 127.0.0.1:3307</code></td><td><code>2002 / HY000</code></td><td>Dinleyici yok; bağlantı reddi. Parolayı değiştirmek dinleyici oluşturmaz.</td></tr><tr><td><code>TCP 127.0.0.1:3306</code></td><td><code>1045 / 28000</code></td><td>Bu deneyde bilerek yanlış parola kullanıldı; kimlik doğrulama reddedildi.</td></tr><tr><td><code>SOCKET /tmp/cybertool-absent.sock</code></td><td><code>2002 / HY000</code></td><td>Olmayan Unix soket yolu. TCP portunu değiştirmek bu yolu düzeltmez.</td></tr><tr><td><code>TCP 127.0.0.1:3306</code></td><td><code>SELECT 1 → 1; exit 0</code></td><td>Aynı sunucu ve port, doğru geçici parola: başarılı kontrol.</td></tr></tbody></table></div>
+<p><strong>Önemli ayrım: Bu MariaDB istemcisi iki farklı bağlantı türünde de 2002 döndürdü. MySQL belgelerindeki 2003 / 10061 örneği bağlantı reddini anlatır; istemciler aynı numarayı kullanmak zorunda değildir. Önce tam mesajdaki sunucu/port veya socket yolunu okuyun. Gerçek bir sistemde 1045 tek başına yanlış parola kanıtı değildir; kullanıcı-host eşleşmesi ve kimlik doğrulama yöntemi de incelenmelidir.</strong></p><h4>Docker içindeki localhost neden yanıltır?</h4><p>Uygulama ile veritabanı ayrı konteynerlerdeyse, uygulamadaki 127.0.0.1 uygulama konteynerinin kendisidir. Aynı Docker ağındaki Compose servis adı ve konteyner portunu kullanın; örneğin db:3306. Host üzerinde 3307:3306 eşlemesi olması, diğer konteynerin db:3307 kullanması gerektiği anlamına gelmez. Yukarıdaki deney istemciyi bilerek veritabanı konteynerinin içinde çalıştırır; bu nedenle 127.0.0.1 burada doğrudur. Gerçek uygulama için testi uygulamanın ağından tekrarlayın.</p>
+<h4>Deneyi kendiniz tekrarlayın</h4><p>Python 3 ve çalışan Docker gerekir. Paketi çıkarın; aşağıdaki iki komutu paket klasöründe çalıştırın. İlk komut resmi MariaDB imajını indirir. Betik 512 MB bellek ve 1 CPU sınırıyla tek kullanımlık konteyner açar, dört sonucu denetler ve sonunda temizler. Rastgele parola yalnız geçici süreç/konteyner ortamında tutulur; çıktıya yazılmaz. İmaj etiketi ileride değişebilir; kullanılan digest JSON çıktısında yer alır. Deney MySQL sunucusunda veya Windows native istemcisinde doğrulanmış değildir.</p>
+<pre><code>docker pull mariadb:11.4
+python3 mysql_connection_lab.py</code></pre>
+<p><a href="READ-ME.txt">Deney betiği ve sonuçları içeren paket</a> · <a href="https://github.com/codeonthetable/cybertool-connection-checklists">GitHub</a></p>
+<p>Kaynaklar: <a href="https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html">MySQL connection troubleshooting</a> · <a href="https://docs.docker.com/compose/how-tos/networking/">Docker Compose networking</a></p></section><section id="mysql-worked-example" aria-labelledby="mysql-example-title"><h3 id="mysql-example-title">Aynı uygulama, iki hata: hangi kontrol yapılmalı?</h3><p>Varsayımsal örnek: Windows uygulaması, yetkili özel ağdaki veritabanına bağlanamıyor. Aşağıdakiler gerçek sunucu çıktısı veya çözülmüş müşteri vakası değildir.</p><h4>A — 2003 / Connection refused / 10061</h4><p>TCP bağlantısı reddedilmiş. Uygulamanın çalıştığı ağdan hedef adres ve yapılandırılmış portu kontrol edin; yöneticiyle dinleyen servisi karşılaştırın. Farklı bir bilgisayardan başarılı test, uygulamanın erişimini kanıtlamaz.</p><p><a data-mysql-example="refused" href="demo-tr.html#mysql-case=refused&amp;os=windows&amp;client=mysql">Bu örneğin kontrol listesini aç</a></p><h4>B — 1045 / Access denied</h4><p>Sunucu kimlik doğrulamayı reddetmiş. Önce doğru ortama ulaşıldığını, ardından kullanıcı-hosta göre hesap eşleşmesini ve kimlik doğrulama yöntemini yöneticiyle kontrol edin. Bu mesaj tek başına yanlış parola kanıtı değildir.</p><p><a data-mysql-example="auth" href="demo-tr.html#mysql-case=auth&amp;os=windows&amp;client=mysql">Bu örneğin kontrol listesini aç</a></p><p>Her örnekten kendi kontrol listenize geçebilirsiniz. Özel veritabanını internete açmak veya güvenlik duvarını kapatmak bu örneklerin çözümü değildir.</p></section><p><a href="https://cyber-tool.org/tr/port/3306#connection-guide">Güncel web rehberi</a> · cyber-tool.org</p></main><script>/* Local-only checklist. Never fetch targets or collect credentials. */
+(function (root) {
+    'use strict';
+    const CASES = ['refused', 'timeout', 'auth', 'socket', 'dns'];
+    function normalize(selection = {}) {
+        return {error: CASES.includes(selection.error) ? selection.error : 'refused',
+            os: selection.os === 'windows' ? 'windows' : 'unix',
+            client: selection.client === 'mariadb' ? 'mariadb' : 'mysql'};
+    }
+    function command(selection) {
+        const s = normalize(selection);
+        if (s.error === 'auth') return '';
+        if (s.error === 'dns') return 'nslookup db.example.com';
+        if (s.error === 'socket') return s.os === 'windows' ? '' : s.client + ' --protocol=TCP --host=127.0.0.1 --port=3306 --user=YOUR_USER --password';
+        return s.os === 'windows' ? 'Test-NetConnection -ComputerName db.example.com -Port 3306 -InformationLevel Detailed' : 'nc -vz -w 5 db.example.com 3306';
+    }
+    function fragment(selection) {
+        const s = normalize(selection);
+        return '#mysql-case=' + s.error + '&os=' + s.os + '&client=' + s.client;
+    }
+    const api = {normalize, command, fragment};
+    if (typeof module !== 'undefined' && module.exports) module.exports = api;
+    if (typeof document === 'undefined') return;
+    const dataNode = document.getElementById('mysql-journey-data');
+    if (!dataNode) return;
+    const data = JSON.parse(dataNode.textContent), copy = data.copy;
+    const form = document.getElementById('mysql-journey-form');
+    const error = document.getElementById('mysql-error'), os = document.getElementById('mysql-os'), client = document.getElementById('mysql-client');
+    const plan = document.getElementById('mysql-plan'), output = document.getElementById('mysql-plan-text'), status = document.getElementById('mysql-plan-status');
+    const canonical = 'https://cyber-tool.org/' + data.language + '/port/3306';
+    let active = normalize();
+    let emitted = new Set();
+    function metric(name, outcome) {
+        if (new URLSearchParams(location.search).get('measurement') === 'off' || !/^(www\.)?cyber-tool\.org$/.test(location.hostname)) return;
+        try { if (localStorage.getItem('cybertool_measurement') === 'off') return; } catch (_) {}
+        if (typeof root.gtag !== 'function' || emitted.has(name + outcome)) return;
+        emitted.add(name + outcome);
+        root.gtag('event', name, {tool_id: 'mysql_connection', outcome, ui_language: data.language, page_location: location.origin + location.pathname});
+    }
+    function build(selection, fromUser) {
+        active = normalize(selection);
+        error.value = active.error; os.value = active.os; client.value = active.client;
+        const [title, meaning, steps, next] = data.cases[active.error];
+        const lines = [title, copy.oslabel + ': ' + copy[active.os], copy.clientlabel + ': ' + active.client, '', meaning, '', ...steps.map((s, i) => (i + 1) + '. ' + s), '', copy.next + ': ' + next, ''];
+        const cmd = command(active);
+        if (active.error === 'socket') lines.push(active.os === 'windows' ? copy.socketWindows : copy.socketCommand, '');
+        if (active.error === 'auth') lines.push(copy.authCommand, '');
+        if (cmd) lines.push(copy.command, cmd, '');
+        lines.push(copy.disclaimer, copy.reference + ': ' + canonical + fragment(active));
+        output.textContent = lines.join('\n');
+        plan.hidden = false; status.textContent = '';
+        if (fromUser) { document.getElementById('mysql-plan-title').focus(); metric('diagnostic_plan_generated', active.error); }
+    }
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        build({error: error.value, os: os.value, client: client.value}, event.isTrusted);
+    });
+    async function clipboard(text, outcome, trusted) {
+        try { await navigator.clipboard.writeText(text); status.textContent = copy.copied; if (trusted) metric('diagnostic_plan_exported', outcome); }
+        catch (_) { status.textContent = copy.fallback; }
+    }
+    document.getElementById('mysql-copy').addEventListener('click', event => clipboard(output.textContent, 'copy', event.isTrusted));
+    document.getElementById('mysql-share').addEventListener('click', event => clipboard(canonical + fragment(active), 'case_link', event.isTrusted));
+    document.getElementById('mysql-download').addEventListener('click', event => {
+        const url = URL.createObjectURL(new Blob([output.textContent + '\n'], {type: 'text/plain;charset=utf-8'}));
+        const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'mysql-checklist-' + active.error + '-' + data.language + '.txt';
+        anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        if (event.isTrusted) metric('diagnostic_plan_exported', 'download_requested');
+    });
+    const kitDownload = document.getElementById('mysql-kit-download');
+    if (kitDownload) kitDownload.addEventListener('click', event => {
+        if (event.isTrusted) metric('diagnostic_asset_requested', 'offline_zip');
+    });
+    document.querySelectorAll('[data-mysql-example]').forEach(link => link.addEventListener('click', event => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        build({error: link.dataset.mysqlExample, os: 'windows', client: 'mysql'}, event.isTrusted);
+        document.getElementById('mysql-plan-title').scrollIntoView({block: 'start'});
+    }));
+    const initial = new URLSearchParams(location.hash.slice(1));
+    if (CASES.includes(initial.get('mysql-case'))) build({error: initial.get('mysql-case'), os: initial.get('os'), client: initial.get('client')}, false);
+})(typeof window !== 'undefined' ? window : globalThis);
+</script></body></html>

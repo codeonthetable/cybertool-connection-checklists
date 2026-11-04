@@ -1,0 +1,17 @@
+One application, two errors: which check comes next?
+Hypothetical example: a Windows application cannot connect to a database on an authorized private network. These are not captured server results or resolved customer incidents.
+
+A — 2003 / Connection refused / 10061
+The TCP connection was refused. From the application network, check the destination and configured port; compare the listener with the administrator. A successful check from another machine does not establish application connectivity.
+https://cyber-tool.org/en/port/3306#mysql-case=refused&os=windows&client=mysql
+
+B — 1045 / Access denied
+The server rejected authentication. Verify the intended environment, then review the user/host account match and authentication method with the administrator. This message alone does not prove a wrong password.
+https://cyber-tool.org/en/port/3306#mysql-case=auth&os=windows&client=mysql
+
+Open the matching checklist to continue. Exposing a private database to the internet or disabling a firewall is not the fix proposed in either example.
+
+Sources and command documentation
+MySQL connection troubleshooting: https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html
+MySQL client error reference: https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html
+MySQL Access denied: https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html

@@ -1,0 +1,46 @@
+MySQL / MariaDB bağlantı sorununuz için kontrol listesi
+Bu bir teşhis kontrol listesidir; nedenin bulunduğu veya sorunun çözüldüğü anlamına gelmez.
+https://cyber-tool.org/tr/port/3306#connection-guide
+
+Bağlantı reddedildi / Connection refused
+Tam mesaj bağlantı reddi gösteriyorsa bu dalı kullanın. MySQL 2003/10061, MariaDB istemcisi ise 2002 gösterebilir; socket yolu varsa yerel socket dalını seçin.
+1. Kontrolü hatalı uygulamanın çalıştığı makine veya konteyner ağından yapın.
+2. Hedef portta dinleyen servis ile uygulamanın sunucu ve port ayarlarını karşılaştırın.
+3. Açık ret, dinleyici eksikliği veya ağ erişim kuralından kaynaklanabilir; yalnız hata koduyla neden seçmeyin.
+Sonraki adım: TCP testi başarılıysa uygulamadaki tam hataya dönün. Başarısızsa sunucu yöneticisiyle dinleyiciyi ve izinli kaynak ağını kontrol edin.
+
+Zaman aşımı / Connection timed out
+İstemci bağlantı için bekliyor ve zaman aşımına düşüyorsa bu dalı kullanın.
+1. Uygulamanın kullandığı sunucu adının beklenen IP adresine çözüldüğünü kontrol edin.
+2. VPN, özel ağ ve bulut erişim kurallarını uygulamanın kaynak ağıyla karşılaştırın.
+3. Süreyi artırmadan önce erişim yolunu inceleyin; zaman aşımı tek başına güvenlik duvarını kanıtlamaz.
+Sonraki adım: Kendi ağınızdaki sonucu dışarıdan yapılan port testiyle ayrı değerlendirin. Özel veritabanının internete kapalı olması beklenen davranış olabilir.
+
+1045 — Access denied
+Veritabanı kimlik doğrulama isteğini reddediyorsa bu dalı kullanın.
+1. İstemcinin doğru ortam ve sunucuya bağlandığını doğrulayın.
+2. Yetkili yöneticiyle kullanıcı-hosta göre hesap eşleşmesini, yetkileri ve kimlik doğrulama yöntemini inceleyin.
+3. Parolayı destek kaydına eklemeyin; başarısız girişleri otomatik olarak tekrarlamayın.
+Sonraki adım: Ağ bağlantısı kurulduktan sonraki kimlik doğrulama hatası için rastgele port açmayın. Hesap ayarı düzeltildiğinde asıl uygulama isteğini yeniden kontrol edin.
+
+2002 — Yerel socket bağlantısı
+Mesajda socket yolu geçiyorsa TCP testiyle farklı bir bağlantı türünü sınadığınızı unutmayın.
+1. İstemci ve sunucunun aynı makinede olup olmadığını belirleyin.
+2. İstemcinin beklediği socket yolu ile sunucunun kullandığı yolu karşılaştırın.
+3. TCP karşılaştırmasını yalnız yerel sunucunuz TCP dinliyorsa ve hesabınız bu bağlantıya yetkiliyse yapın.
+Sonraki adım: Socket dosyasını gelişigüzel silmeyin. TCP ile başarı, socket yolunun veya izinlerinin doğru olduğunu göstermez.
+
+2005 — Unknown server host
+Sunucu adı çözümlenemiyorsa önce adlandırma yolunu inceleyin.
+1. Sunucu adında yazım hatası veya yanlış ortam adı olup olmadığını kontrol edin.
+2. Adı uygulamanın çalıştığı ağda çözümleyin; özel DNS veya konteyner servis adı dışarıdan çalışmayabilir.
+3. DNS cevabını beklenen adresle karşılaştırın; DNS başarısı TCP veya oturum açma başarısı değildir.
+Sonraki adım: Doğru ağda isim çözümleme çalıştıktan sonra aynı sunucu ve portla bağlantı adımına geçin.
+
+Kaynaklar ve komut belgeleri
+MySQL connection troubleshooting: https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html
+MySQL client error reference: https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html
+MySQL Access denied: https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html
+MariaDB connection parameters: https://mariadb.com/docs/server/mariadb-quickstart-guides/mariadb-connecting-guide
+Windows Test-NetConnection: https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection
+OpenBSD nc: https://man.openbsd.org/nc

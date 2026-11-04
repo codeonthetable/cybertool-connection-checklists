@@ -1,0 +1,17 @@
+Aynı uygulama, iki hata: hangi kontrol yapılmalı?
+Varsayımsal örnek: Windows uygulaması, yetkili özel ağdaki veritabanına bağlanamıyor. Aşağıdakiler gerçek sunucu çıktısı veya çözülmüş müşteri vakası değildir.
+
+A — 2003 / Connection refused / 10061
+TCP bağlantısı reddedilmiş. Uygulamanın çalıştığı ağdan hedef adres ve yapılandırılmış portu kontrol edin; yöneticiyle dinleyen servisi karşılaştırın. Farklı bir bilgisayardan başarılı test, uygulamanın erişimini kanıtlamaz.
+https://cyber-tool.org/tr/port/3306#mysql-case=refused&os=windows&client=mysql
+
+B — 1045 / Access denied
+Sunucu kimlik doğrulamayı reddetmiş. Önce doğru ortama ulaşıldığını, ardından kullanıcı-hosta göre hesap eşleşmesini ve kimlik doğrulama yöntemini yöneticiyle kontrol edin. Bu mesaj tek başına yanlış parola kanıtı değildir.
+https://cyber-tool.org/tr/port/3306#mysql-case=auth&os=windows&client=mysql
+
+Her örnekten kendi kontrol listenize geçebilirsiniz. Özel veritabanını internete açmak veya güvenlik duvarını kapatmak bu örneklerin çözümü değildir.
+
+Kaynaklar ve komut belgeleri
+MySQL connection troubleshooting: https://dev.mysql.com/doc/refman/8.4/en/can-not-connect-to-server.html
+MySQL client error reference: https://dev.mysql.com/doc/mysql-errors/8.4/en/client-error-reference.html
+MySQL Access denied: https://dev.mysql.com/doc/refman/8.4/en/error-access-denied.html
