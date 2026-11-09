@@ -33,7 +33,7 @@ docker pull mariadb:11.4
 python3 mysql_connection_lab.py --engine mariadb
 ```
 
-Each invocation creates one temporary container, runs four checks, verifies their outcomes, and removes the container and temporary database. The limits are 1 CPU and 1 GB of memory for MySQL or 512 MB for MariaDB. Random credentials are not printed or saved to disk; they exist in temporary process/container environments. Image downloads need internet; the running lab has no external network. No existing database or container is modified.
+Each invocation creates one temporary container, runs four checks, verifies their outcomes, and removes the container and temporary database. The limits are 1 CPU and 1 GB of memory for MySQL or 512 MB for MariaDB. The script does not print random credentials or put them in result files. They exist in process/container environments while the lab runs and are visible to administrators with Docker access. Image downloads need internet; the running lab has no external network. No existing database or container is modified.
 
 `mysql-server-lab-results.json` and `lab-results.json` record the respective client versions, image digests, error codes, successful controls and cleanup. Image tags can move. To reproduce a recorded image, pull its digest and tag it locally as the corresponding `mysql:8.4` or `mariadb:11.4` before running the script.
 
