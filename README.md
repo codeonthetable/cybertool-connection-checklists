@@ -2,37 +2,40 @@
 
 **Connection refused, error 2002, or Access denied (1045)? Choose the next check from the actual failure.**
 
-This kit includes an isolated MariaDB experiment, recorded results, and browser checklists for Windows PowerShell and Linux/macOS. No database credentials or private hostname are needed to use the checklists.
+This kit includes isolated MySQL and MariaDB experiments, recorded results, and browser checklists for Windows PowerShell and Linux/macOS. No database credentials or private hostname are needed to use the checklists.
 
 **[Use the English interactive guide](https://cyber-tool.org/en/port/3306?utm_source=github&utm_medium=referral&utm_campaign=mysql_connection_lab#connection-guide)** · **[Türkçe interaktif rehber](https://cyber-tool.org/tr/port/3306?utm_source=github&utm_medium=referral&utm_campaign=mysql_connection_lab#connection-guide)**
 
 ## What the experiment actually showed
 
-Tested on **4 November 2026**, with **MariaDB 11.4.13**, inside a disposable Linux Docker container with `--network none` and **no published host ports**:
+Tested on **9 November 2026**, with **MySQL 8.4.13** and **MariaDB 11.4.13**, each in its own disposable Linux Docker container with `--network none` and **no published host ports**.
 
-| Controlled change | Observed result | What to investigate |
-| --- | --- | --- |
-| TCP to 127.0.0.1:3307, no listener | 2002 / HY000 | Listener, destination, configured port |
-| TCP to 127.0.0.1:3306, deliberately wrong password | 1045 / 28000 | Authentication after reaching the server |
-| Unix socket path deliberately absent | 2002 / HY000 | Socket path and transport |
-| Same TCP server, correct temporary password | `SELECT 1` returned `1`, exit 0 | Successful control for this lab |
+| Controlled change | MySQL client | MariaDB client | Next check |
+| --- | --- | --- | --- |
+| TCP to 127.0.0.1:3307, no listener | 2003 / HY000 | 2002 / HY000 | Listener, destination, configured port |
+| TCP to 127.0.0.1:3306, deliberately wrong password | 1045 / 28000 | 1045 / 28000 | Authentication after reaching the server |
+| Unix socket path deliberately absent | 2002 / HY000 | 2002 / HY000 | Socket path and transport |
+| Same TCP server, correct temporary password | SELECT 1 → 1; exit 0 | SELECT 1 → 1; exit 0 | Successful control for each engine |
 
-**2002 is not enough to identify the broken layer.** This MariaDB client used it for both refused TCP and a missing Unix socket. MySQL documentation also describes 2003/10061 for connection refusal. Read the complete error and transport, not only the number. Outside this controlled lab, 1045 does not by itself prove a wrong password; user/host matching and authentication configuration also matter.
+**The same refused connection produced different error numbers.** MariaDB used 2002 for both refused TCP and a missing socket; MySQL used 2003 for refused TCP and 2002 for the missing socket. Identify the client, transport and full error before choosing a fix. Outside this controlled lab, 1045 does not by itself prove a wrong password; user/host matching and authentication configuration also matter.
 
-These are reproducible synthetic tests, not customer incidents. MySQL server and native Windows-client execution are not covered by this lab.
+These are eight verified synthetic outcomes, not customer incidents. Native Windows clients, separate application-container networking and TLS failure modes were not tested by this lab.
 
 ## Run it yourself
 
-Requires Python 3 and an existing Docker installation. Download the repository files or the [bilingual kit](https://cyber-tool.org/downloads/cybertool-mysql-kit.zip), then run:
+Requires Python 3 and an existing Docker installation. Download the repository files or the [bilingual kit](https://cyber-tool.org/downloads/cybertool-mysql-kit.zip), then run either engine:
 
 ```sh
+docker pull mysql:8.4
+python3 mysql_connection_lab.py --engine mysql
+
 docker pull mariadb:11.4
-python3 mysql_connection_lab.py
+python3 mysql_connection_lab.py --engine mariadb
 ```
 
-The script creates one temporary container, limits it to 512 MB / 1 CPU, runs four checks, verifies their outcomes, and removes the container and temporary database. It generates an ephemeral password without printing it. Docker requires enough memory for the database. The initial image download needs internet; the running lab has no external network. No existing database or container is modified.
+Each invocation creates one temporary container, runs four checks, verifies their outcomes, and removes the container and temporary database. The limits are 1 CPU and 1 GB of memory for MySQL or 512 MB for MariaDB. Random credentials are not printed or saved to disk; they exist in temporary process/container environments. Image downloads need internet; the running lab has no external network. No existing database or container is modified.
 
-`lab-results.json` records the client version, actual image digest, expected error codes, successful control and cleanup. The `11.4` image tag can move. To reproduce the recorded image, first pull its digest from that file and tag it locally as `mariadb:11.4`, then run the script.
+`mysql-server-lab-results.json` and `lab-results.json` record the respective client versions, image digests, error codes, successful controls and cleanup. Image tags can move. To reproduce a recorded image, pull its digest and tag it locally as the corresponding `mysql:8.4` or `mariadb:11.4` before running the script.
 
 ## Use the checklist without Docker
 
@@ -53,7 +56,7 @@ Our lab deliberately runs the client **inside the database container**, where lo
 
 ## Türkçe
 
-Bu paket, bağlantı reddi / 2002 / 1045 ayrımını dört kontrollü MariaDB deneyiyle gösterir. `lab-results.json` gerçek deney sonuçlarını, `mysql_connection_lab.py` tekrarlama betiğini içerir. Windows örnek vakaları ise açıkça varsayımsal olarak etiketlenmiştir.
+Bu paket, aynı bağlantı reddinin MySQL 8.4.13 istemcisinde 2003, MariaDB 11.4.13 istemcisinde 2002 verdiğini gösterir. Motor başına dört kontrol geçti. `mysql-server-lab-results.json` ve `lab-results.json` gerçek deney sonuçlarını, `mysql_connection_lab.py` tekrarlama betiğini içerir. Windows örnek vakaları ise açıkça varsayımsal olarak etiketlenmiştir.
 
 Docker olmadan `demo-tr.html` üzerinden hata ve ortam seçip kontrol listenizi oluşturabilirsiniz. Sunucu, kullanıcı veya parola girilmez. [Güncel Türkçe rehberde](https://cyber-tool.org/tr/port/3306?utm_source=github&utm_medium=referral&utm_campaign=mysql_connection_lab#mysql-connection-lab) sonuçların yorumunu ve konteynerlerde localhost/port ayrımını okuyun.
 

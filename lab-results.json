@@ -1,5 +1,6 @@
 {
-  "tested_utc": "2026-11-04T12:59:46.927322+00:00",
+  "tested_utc": "2026-11-09T08:14:01.902354+00:00",
+  "engine": "mariadb",
   "image": "mariadb:11.4",
   "image_digests": [
     "mariadb@sha256:d1891ede5a559f1086f55053bb8cc1569b0298338c4d72d71725a7f74f6ba620"

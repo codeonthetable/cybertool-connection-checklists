@@ -1,0 +1,46 @@
+{
+  "tested_utc": "2026-11-09T08:14:00.777803+00:00",
+  "engine": "mysql",
+  "image": "mysql:8.4",
+  "image_digests": [
+    "mysql@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902"
+  ],
+  "network": "none",
+  "published_ports": [],
+  "cases": [
+    {
+      "case": "tcp_refused",
+      "exit_code": 1,
+      "error_code": "2003",
+      "sqlstate": "HY000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "authentication_denied",
+      "exit_code": 1,
+      "error_code": "1045",
+      "sqlstate": "28000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "missing_socket",
+      "exit_code": 1,
+      "error_code": "2002",
+      "sqlstate": "HY000",
+      "query_result": null,
+      "passed": true
+    },
+    {
+      "case": "authenticated_control",
+      "exit_code": 0,
+      "error_code": null,
+      "sqlstate": null,
+      "query_result": "1",
+      "passed": true
+    }
+  ],
+  "client_version": "mysql  Ver 8.4.13 for Linux on x86_64 (MySQL Community Server - GPL)",
+  "cleanup": "completed"
+}

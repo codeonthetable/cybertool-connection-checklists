@@ -1,15 +1,17 @@
 cyber-tool.org — MySQL / MariaDB connection checklist kit
-Version: 2026-11-04
+Version: 2026-11-09
 
 EN: Extract the ZIP and open demo-en.html in a modern browser. Switch to Turkish
 using the link at the top. No installation, account or network connection is
 needed to build a checklist. The demo does not run commands, connect to a
 database or send analytics. External reference and web-guide links need internet.
 Clipboard permissions vary; generated text is always visible for manual copying.
-The Windows worked examples are hypothetical. The separate Docker lab has four
-verified MariaDB 11.4.13 outcomes in lab-results.json. No customer repair is claimed.
+The Windows worked examples are hypothetical. The Docker lab verifies four cases per engine: MariaDB 11.4.13 in lab-results.json
+and MySQL 8.4.13 in mysql-server-lab-results.json. No customer repair is claimed.
 Optional lab: install Python 3 and Docker, run `docker pull mariadb:11.4`, then
-`python3 mysql_connection_lab.py`. It creates and removes one isolated container,
+`python3 mysql_connection_lab.py --engine mariadb`. For MySQL: `docker pull mysql:8.4`
+and `python3 mysql_connection_lab.py --engine mysql`. Each run creates and removes
+one isolated container (MariaDB 512 MB, MySQL 1 GB memory limit, 1 CPU),
 publishes no host ports and prints no credentials. The image download needs internet.
 Commands are examples for your authorized environment, never executed by the demo.
 Keep all files together so language and text-checklist links work offline.
@@ -20,10 +22,12 @@ TR: ZIP’i çıkarın ve demo-tr.html dosyasını güncel bir tarayıcıda aç�
 sayfanın üstündedir. Kontrol listesi için kurulum, hesap veya internet gerekmez.
 Demo komut çalıştırmaz, veritabanına bağlanmaz ve analitik göndermez. Dış kaynak ve
 web rehberi bağlantıları internet gerektirir. Kopyalama izni yoksa görünür metni
-elle seçebilirsiniz. Windows vakaları varsayımsaldır. Ayrı Docker deneyinin dört
-MariaDB 11.4.13 sonucu lab-results.json içindedir; müşteri çözümü iddiası yoktur.
+elle seçebilirsiniz. Windows vakaları varsayımsaldır. Docker deneyi motor başına dört vakayı doğrular: MariaDB 11.4.13 sonuçları
+lab-results.json, MySQL 8.4.13 sonuçları mysql-server-lab-results.json içindedir.
 İsteğe bağlı deney: Python 3 ve Docker ile önce `docker pull mariadb:11.4`, ardından
-`python3 mysql_connection_lab.py` çalıştırın. Tek yalıtılmış konteyner oluşturulur ve
+`python3 mysql_connection_lab.py --engine mariadb` çalıştırın. MySQL için:
+`docker pull mysql:8.4`, sonra `python3 mysql_connection_lab.py --engine mysql`.
+Her çalıştırmada tek yalıtılmış konteyner (MariaDB 512 MB, MySQL 1 GB, 1 CPU) açılır ve
 silinir; host portu açılmaz, parola yazılmaz. İmaj indirmek internet gerektirir.
 Komutlar kendi yetkili ortamınız için örnektir; demo tarafından çalıştırılmaz.
 Dil ve metin bağlantılarının çevrimdışı çalışması için dosyaları birlikte tutun.

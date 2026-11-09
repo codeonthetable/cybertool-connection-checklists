@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Disposable MariaDB connection lab. Requires Python 3 and Docker; no host ports.
+"""Disposable MySQL/MariaDB connection lab. Python 3 and Docker; no host ports.
 
 Prints only version/digest and checked outcomes, never generated credentials.
-The Docker daemon must already have the official mariadb:11.4 image available.
+Pull the selected official image first. Defaults to the original MariaDB lab.
 """
+import argparse
 import datetime
 import json
 import re
@@ -12,7 +13,14 @@ import subprocess
 import time
 import uuid
 
-IMAGE = 'mariadb:11.4'
+ENGINES = {
+    'mariadb': {'image': 'mariadb:11.4', 'client': 'mariadb', 'memory': '512m',
+                'tmpfs': '256m', 'refused_code': '2002',
+                'env': 'MARIADB_ROOT_PASSWORD={password}\nMARIADB_INITDB_SKIP_TZINFO=1\n'},
+    'mysql': {'image': 'mysql:8.4', 'client': 'mysql', 'memory': '1g',
+              'tmpfs': '512m', 'refused_code': '2003',
+              'env': 'MYSQL_ROOT_PASSWORD={password}\nMYSQL_INITDB_SKIP_TZINFO=1\n'},
+}
 
 
 def run(args, stdin=None, timeout=30):
@@ -21,22 +29,26 @@ def run(args, stdin=None, timeout=30):
 
 
 def main():
-    image = run(['image', 'inspect', IMAGE, '--format', '{{json .RepoDigests}}'])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--engine', choices=sorted(ENGINES), default='mariadb')
+    args = parser.parse_args()
+    engine = ENGINES[args.engine]
+    image = run(['image', 'inspect', engine['image'], '--format', '{{json .RepoDigests}}'])
     if image.returncode:
-        raise RuntimeError('First run: docker pull mariadb:11.4')
+        raise RuntimeError('First run: docker pull ' + engine['image'])
     digests = json.loads(image.stdout)
     name = 'cybertool-mysql-lab-' + uuid.uuid4().hex[:12]
     password = secrets.token_hex(24)
     started = False
     report = {'tested_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-              'image': IMAGE, 'image_digests': digests, 'network': 'none',
+              'engine': args.engine, 'image': engine['image'], 'image_digests': digests, 'network': 'none',
               'published_ports': [], 'cases': []}
     try:
         created = run(['run', '-d', '--name', name, '--network', 'none',
-                       '--memory', '512m', '--cpus', '1', '--pids-limit', '128',
-                       '--tmpfs', '/var/lib/mysql:rw,size=256m',
-                       '--env-file', '/dev/stdin', IMAGE],
-                      'MARIADB_ROOT_PASSWORD=' + password + '\nMARIADB_INITDB_SKIP_TZINFO=1\n')
+                       '--memory', engine['memory'], '--cpus', '1', '--pids-limit', '128',
+                       '--tmpfs', '/var/lib/mysql:rw,size=' + engine['tmpfs'],
+                       '--env-file', '/dev/stdin', engine['image']],
+                      engine['env'].format(password=password))
         if created.returncode:
             raise RuntimeError('Disposable container could not start')
         started = True
@@ -44,23 +56,23 @@ def main():
         def client(options, secret=password):
             # Secret enters via stdin, not command arguments or saved files.
             return run(['exec', '-i', name, 'sh', '-c',
-                        'MYSQL_PWD=$(cat); export MYSQL_PWD; exec mariadb "$@"',
-                        'lab', '--connect-timeout=3', '--batch', '--skip-column-names',
+                        'MYSQL_PWD=$(cat); export MYSQL_PWD; exec "$@"',
+                        'lab', engine['client'], '--connect-timeout=3', '--batch', '--skip-column-names',
                         '--user=root', *options, '-e', 'SELECT 1'], secret, 10)
 
         tcp = ['--protocol=TCP', '--host=127.0.0.1', '--port=3306']
-        for _ in range(60):
+        for _ in range(120):
             if client(tcp).returncode == 0:
                 break
             time.sleep(1)
         else:
-            raise RuntimeError('Isolated database did not become ready within 60 attempts')
-        version = run(['exec', name, 'mariadb', '--version'])
+            raise RuntimeError('Isolated database did not become ready within 120 attempts')
+        version = run(['exec', name, engine['client'], '--version'])
         if version.returncode:
             raise RuntimeError('Cannot read client version')
         report['client_version'] = version.stdout.strip()
         cases = [
-            ('tcp_refused', ['--protocol=TCP', '--host=127.0.0.1', '--port=3307'], password, '2002'),
+            ('tcp_refused', ['--protocol=TCP', '--host=127.0.0.1', '--port=3307'], password, engine['refused_code']),
             ('authentication_denied', tcp, secrets.token_hex(24), '1045'),
             ('missing_socket', ['--protocol=SOCKET', '--socket=/tmp/cybertool-absent.sock'], password, '2002'),
             ('authenticated_control', tcp, password, None),
